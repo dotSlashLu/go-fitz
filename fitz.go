@@ -133,7 +133,7 @@ func (f *Document) NumPage() int {
 }
 
 // Image returns image for given page number.
-func (f *Document) Image(pageNumber int) (image.Image, error) {
+func (f *Document) Image(pageNumber int, scale ...float64) (image.Image, error) {
 	if pageNumber >= f.NumPage() {
 		return nil, ErrPageMissing
 	}
@@ -145,7 +145,11 @@ func (f *Document) Image(pageNumber int) (image.Image, error) {
 	C.fz_bound_page(f.ctx, page, &bounds)
 
 	var ctm C.fz_matrix
-	C.fz_scale(&ctm, C.float(300.0/72), C.float(300.0/72))
+	cScale := C.float(1.0)
+	if len(scale) == 1 {
+		cScale = C.float(scale[0])
+	}
+	C.fz_scale(&ctm, cScale, cScale)
 
 	var bbox C.fz_irect
 	C.fz_transform_rect(&bounds, &ctm)
